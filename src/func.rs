@@ -198,7 +198,14 @@ impl FuncInstance {
         match *func.as_internal() {
             FuncInstanceInternal::Internal { .. } => {
                 let mut interpreter = Interpreter::new(func, args, None)?;
-                interpreter.tracer = Some(tracer);
+                #[cfg(feature = "tracer")]
+                {
+                    interpreter.tracer = Some(tracer);
+                }
+                #[cfg(not(feature = "tracer"))]
+                {
+                    interpreter.tracer = None;
+                }
                 interpreter.start_execution(externals)
             }
             FuncInstanceInternal::Host { .. } => unreachable!(),
