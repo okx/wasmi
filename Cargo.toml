@@ -48,6 +48,7 @@ std = [
 virtual_memory = ["wasmi_core/virtual_memory", "std"]
 
 reduced-stack-buffer = [ "parity-wasm/reduced-stack-buffer" ]
+tracer = ["default"]
 
 [workspace]
 members = ["validation", "core", "wasmi_v1"]
