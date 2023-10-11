@@ -454,9 +454,7 @@ impl ModuleInstance {
         let module_ref = ModuleInstance::alloc_module(loaded_module, extern_vals, tracer.clone())?;
 
         if let Some(tracer) = tracer.clone() {
-            tracer
-                .borrow_mut()
-                .register_module_instance(loaded_module, &module_ref);
+            tracer.borrow_mut().register_module_instance(&module_ref);
         }
 
         for element_segment in module

@@ -1049,7 +1049,7 @@ impl Interpreter {
 
                     match &desc.ftype {
                         specs::types::FunctionType::WasmFunction => StepInfo::Call {
-                            index: desc.index_within_jtable,
+                            index: desc.func_index,
                         },
                         specs::types::FunctionType::HostFunction {
                             plugin,

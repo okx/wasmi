@@ -448,7 +448,7 @@ impl<'a> Instruction<'a> {
                         index: function_mapping
                             .get(&func_index)
                             .unwrap()
-                            .index_within_jtable,
+                            .func_index,
                     },
                     specs::types::FunctionType::HostFunction {
                         plugin,
