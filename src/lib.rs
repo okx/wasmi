@@ -266,7 +266,7 @@ mod isa;
 mod memory;
 mod module;
 mod prepare;
-mod runner;
+pub mod runner;
 mod table;
 mod types;
 

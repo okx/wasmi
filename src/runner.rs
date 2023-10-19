@@ -40,6 +40,25 @@ use specs::{
 };
 use std::rc::Rc;
 use validation::{DEFAULT_MEMORY_INDEX, DEFAULT_TABLE_INDEX};
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+
+lazy_static! {
+    pub static ref ETABLE_TRACE: Mutex<usize> = Mutex::new(0);
+}
+
+pub fn add_trace_count() {
+    let mut counter = ETABLE_TRACE.lock().unwrap();
+    *counter += 1;
+}
+
+pub fn get_trace_count() -> usize {
+    let mut counter = ETABLE_TRACE.lock().unwrap();
+    let count = *counter;
+    *counter = 0;
+    println!("trace count: {:?}", count);
+    return count;
+}
 
 /// Maximum number of bytes on the value stack.
 /// wasmi's default value is 1024 * 1024,
@@ -2045,14 +2064,17 @@ impl Interpreter {
 
             match self.run_instruction(function_context, &instruction)? {
                 InstructionOutcome::RunNextInstruction => {
+                    add_trace_count();
                     trace_post!();
                 }
                 InstructionOutcome::Branch(target) => {
+                    add_trace_count();
                     trace_post!();
                     iter = instructions.iterate_from(target.dst_pc);
                     self.value_stack.drop_keep(target.drop_keep);
                 }
                 InstructionOutcome::ExecuteCall(func_ref) => {
+                    add_trace_count();
                     // We don't record updated pc, the value should be recorded in the next trace log.
                     trace_post!();
 
@@ -2060,6 +2082,7 @@ impl Interpreter {
                     return Ok(RunResult::NestedCall(func_ref));
                 }
                 InstructionOutcome::Return(drop_keep) => {
+                    add_trace_count();
                     trace_post!();
 
                     if let Some(tracer) = self.tracer.clone() {
