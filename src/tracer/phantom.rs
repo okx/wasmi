@@ -195,5 +195,3 @@ impl Tracer {
         add_trace_count();
     }
 }
-
-
