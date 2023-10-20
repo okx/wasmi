@@ -707,6 +707,17 @@ impl ModuleInstance {
         FuncInstance::invoke(&func_instance, args, externals).map_err(Error::Trap)
     }
 
+    pub fn invoke_export_trace_count<E: Externals>(
+        &self,
+        func_name: &str,
+        args: &[RuntimeValue],
+        externals: &mut E,
+        tracer: Rc<RefCell<Tracer>>,
+    ) -> Result<Option<RuntimeValue>, Error> {
+        let func_instance = self.func_by_name(func_name)?;
+        FuncInstance::invoke_trace_count(&func_instance, args, externals, tracer).map_err(Error::Trap)
+    }
+
     pub fn invoke_export_trace<E: Externals>(
         &self,
         func_name: &str,
