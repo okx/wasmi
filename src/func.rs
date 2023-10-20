@@ -188,6 +188,27 @@ impl FuncInstance {
         }
     }
 
+    pub fn invoke_trace_count<E: Externals>(
+        func: &FuncRef,
+        args: &[RuntimeValue],
+        externals: &mut E,
+        tracer: Rc<RefCell<Tracer>>,
+    ) -> Result<Option<RuntimeValue>, Trap> {
+        check_function_args(func.signature(), args)?;
+        match *func.as_internal() {
+            FuncInstanceInternal::Internal { .. } => {
+                let mut interpreter = Interpreter::new(func, args, None)?;
+                interpreter.phantom_functions = tracer.borrow().phantom_functions.clone();
+                interpreter.phantom_functions_ref = tracer.borrow().phantom_functions_ref.clone();
+                interpreter.start_execution(externals)
+            }
+            FuncInstanceInternal::Host {
+                ref host_func_index,
+                ..
+            } => externals.invoke_index(*host_func_index, args.into()),
+        }
+    }
+
     pub fn invoke_trace<E: Externals>(
         func: &FuncRef,
         args: &[RuntimeValue],
@@ -198,6 +219,8 @@ impl FuncInstance {
         match *func.as_internal() {
             FuncInstanceInternal::Internal { .. } => {
                 let mut interpreter = Interpreter::new(func, args, None)?;
+                interpreter.phantom_functions = tracer.borrow().phantom_functions.clone();
+                interpreter.phantom_functions_ref = tracer.borrow().phantom_functions_ref.clone();
                 interpreter.tracer = Some(tracer);
                 interpreter.start_execution(externals)
             }

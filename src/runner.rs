@@ -221,6 +221,8 @@ pub struct Interpreter {
     scratch: Vec<RuntimeValue>,
     pub(crate) tracer: Option<Rc<RefCell<Tracer>>>,
     mask_tracer: Vec<u32>,
+    pub phantom_functions: Vec<String>,
+    pub phantom_functions_ref: Vec<FuncRef>,
 }
 
 impl Interpreter {
@@ -253,6 +255,8 @@ impl Interpreter {
             scratch: Vec::new(),
             tracer: None,
             mask_tracer: vec![],
+            phantom_functions: vec![],
+            phantom_functions_ref: vec![]
         })
     }
 
@@ -382,13 +386,8 @@ impl Interpreter {
                                 tracer.push_frame();
                             }
 
-                            if let Some(tracer) = self.tracer.clone() {
-                                if tracer
-                                    .borrow()
-                                    .is_phantom_function(&nested_context.function)
-                                {
-                                    self.mask_tracer.push(self.value_stack.sp as u32);
-                                }
+                            if self.phantom_functions_ref.contains(&nested_context.function) {
+                                self.mask_tracer.push(self.value_stack.sp as u32);
                             }
 
                             self.call_stack.push(function_context);
@@ -2064,17 +2063,23 @@ impl Interpreter {
 
             match self.run_instruction(function_context, &instruction)? {
                 InstructionOutcome::RunNextInstruction => {
-                    add_trace_count();
+                    if self.mask_tracer.is_empty() {
+                        add_trace_count();
+                    }
                     trace_post!();
                 }
                 InstructionOutcome::Branch(target) => {
-                    add_trace_count();
+                    if self.mask_tracer.is_empty() {
+                        add_trace_count();
+                    }
                     trace_post!();
                     iter = instructions.iterate_from(target.dst_pc);
                     self.value_stack.drop_keep(target.drop_keep);
                 }
                 InstructionOutcome::ExecuteCall(func_ref) => {
-                    add_trace_count();
+                    if self.mask_tracer.is_empty() {
+                        add_trace_count();
+                    }
                     // We don't record updated pc, the value should be recorded in the next trace log.
                     trace_post!();
 
@@ -2082,24 +2087,28 @@ impl Interpreter {
                     return Ok(RunResult::NestedCall(func_ref));
                 }
                 InstructionOutcome::Return(drop_keep) => {
-                    add_trace_count();
+                    if self.mask_tracer.is_empty() {
+                        add_trace_count();
+                    }
                     trace_post!();
 
-                    if let Some(tracer) = self.tracer.clone() {
-                        if tracer
-                            .borrow()
-                            .is_phantom_function(&function_context.function)
-                        {
+                        if self.phantom_functions_ref.contains(&function_context.function)  {
                             let sp_before = self.mask_tracer.pop().unwrap();
 
                             if self.mask_tracer.is_empty() {
-                                let last_jump_eid = tracer.borrow().last_jump_eid();
-                                let callee_fid =
-                                    tracer.borrow().lookup_function(&function_context.function);
-                                let wasm_input_function_idx =
-                                    tracer.borrow().wasm_input_func_idx.unwrap();
+                                let mut last_jump_eid: u32 = 0;
+                                let mut callee_fid: u32 = 0;
+                                let mut wasm_input_function_idx: u32 = 0;
+                                if let Some(tracer) = self.tracer.clone() {
+                                    last_jump_eid = tracer.borrow().last_jump_eid();
+                                    callee_fid =
+                                        tracer.borrow().lookup_function(&function_context.function);
+                                    wasm_input_function_idx =
+                                        tracer.borrow().wasm_input_func_idx.unwrap();
+                                }
 
-                                tracer.borrow_mut().fill_trace(
+                                Tracer::fill_trace(
+                                    &self.tracer,
                                     sp_before,
                                     current_memory as u32,
                                     last_jump_eid,
@@ -2117,7 +2126,6 @@ impl Interpreter {
                                 );
                             }
                         }
-                    }
 
                     if let Some(tracer) = self.get_tracer_if_active() {
                         tracer.borrow_mut().pop_frame();

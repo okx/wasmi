@@ -17,6 +17,7 @@ wasmi_core = { version = "0.1", path = "core", default-features = false }
 validation = { package = "wasmi-validation", version = "0.4", path = "validation", default-features = false }
 parity-wasm = { version = "0.42.0", features = ["sign_ext"] }
 specs = { path = "../../crates/specs" }
+log = "0.4.19"
 
 [dev-dependencies]
 assert_matches = "1.5"
