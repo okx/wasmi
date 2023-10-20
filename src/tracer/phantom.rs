@@ -194,21 +194,6 @@ impl Tracer {
         }
         add_trace_count();
     }
-
-    pub fn fill_trace_count(
-        callee_sig: &Signature,
-    ) {
-        let has_return_value = callee_sig.return_type().is_some();
-
-        if has_return_value {
-            add_trace_count();
-            add_trace_count();
-            if callee_sig.return_type() != Some(wasmi_core::ValueType::I64) {
-                add_trace_count();
-            }
-        }
-        add_trace_count();
-    }
 }
 
 
