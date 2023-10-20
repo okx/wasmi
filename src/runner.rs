@@ -40,25 +40,7 @@ use specs::{
 };
 use std::rc::Rc;
 use validation::{DEFAULT_MEMORY_INDEX, DEFAULT_TABLE_INDEX};
-use lazy_static::lazy_static;
-use std::sync::Mutex;
-
-lazy_static! {
-    pub static ref ETABLE_TRACE: Mutex<usize> = Mutex::new(0);
-}
-
-pub fn add_trace_count() {
-    let mut counter = ETABLE_TRACE.lock().unwrap();
-    *counter += 1;
-}
-
-pub fn get_trace_count() -> usize {
-    let mut counter = ETABLE_TRACE.lock().unwrap();
-    let count = *counter;
-    *counter = 0;
-    println!("trace count: {:?}", count);
-    return count;
-}
+use crate::tracer::phantom::add_trace_count;
 
 /// Maximum number of bytes on the value stack.
 /// wasmi's default value is 1024 * 1024,

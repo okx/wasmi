@@ -10,9 +10,31 @@ use crate::{
     isa::{DropKeep, Instruction, Keep},
     Signature,
 };
-use crate::runner::add_trace_count;
 use std::rc::Rc;
 use core::{cell::RefCell};
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+
+lazy_static! {
+    pub static ref ETABLE_TRACE: Mutex<usize> = Mutex::new(0);
+}
+
+pub fn reset_trace_count() {
+    let mut counter = ETABLE_TRACE.lock().unwrap();
+    *counter += 0;
+}
+
+pub fn add_trace_count() {
+    let mut counter = ETABLE_TRACE.lock().unwrap();
+    *counter += 1;
+}
+
+pub fn get_trace_count() -> usize {
+    let mut counter = ETABLE_TRACE.lock().unwrap();
+    let count = *counter;
+    *counter = 0;
+    return count;
+}
 
 pub struct PhantomFunction;
 
