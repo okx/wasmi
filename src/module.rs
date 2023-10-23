@@ -32,6 +32,7 @@ use core::{
 use parity_wasm::elements::{External, InitExpr, Instruction, Internal, ResizableLimits, Type};
 use specs::configure_table::ConfigureTable;
 use validation::{DEFAULT_MEMORY_INDEX, DEFAULT_TABLE_INDEX};
+use crate::tracer::phantom::reset_trace_count;
 
 /// Reference to a [`ModuleInstance`].
 ///
@@ -606,6 +607,7 @@ impl ModuleInstance {
         imports: &I,
         tracer: Option<Rc<RefCell<Tracer>>>,
     ) -> Result<NotStartedModuleRef<'m>, Error> {
+        reset_trace_count();
         let module = loaded_module.module();
 
         let mut extern_vals = Vec::new();
