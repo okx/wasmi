@@ -172,11 +172,12 @@ impl Tracer {
         }
 
         if let Some(tracer) = &tracer {
+            let opcode = inst.next().unwrap().into(&tracer.borrow().function_index_translation);
             tracer.borrow_mut().etable.push(
                 InstructionTableEntry {
                     fid,
                     iid,
-                    opcode: inst.next().unwrap().into(&tracer.borrow().function_index_translation),
+                    opcode,
                 },
                 current_sp + has_return_value as u32,
                 allocated_memory_pages,
