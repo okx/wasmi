@@ -104,11 +104,12 @@ impl Tracer {
 
         if has_return_value {
             if let Some(tracer) = &tracer {
+                let opcode = inst.next().unwrap().into(&tracer.borrow().function_index_translation);
                 tracer.borrow_mut().etable.push(
                     InstructionTableEntry {
                         fid,
                         iid,
-                        opcode: inst.next().unwrap().into(&tracer.borrow().function_index_translation),
+                        opcode,
                     },
                     current_sp,
                     allocated_memory_pages,
@@ -121,11 +122,12 @@ impl Tracer {
             iid += 1;
 
             if let Some(tracer) = &tracer {
+                let opcode = inst.next().unwrap().into(&tracer.borrow().function_index_translation);
                 tracer.borrow_mut().etable.push(
                     InstructionTableEntry {
                         fid,
                         iid,
-                        opcode: inst.next().unwrap().into(&tracer.borrow().function_index_translation),
+                        opcode,
                     },
                     current_sp + 1,
                     allocated_memory_pages,
@@ -150,11 +152,12 @@ impl Tracer {
 
             if callee_sig.return_type() != Some(wasmi_core::ValueType::I64) {
                 if let Some(tracer) = &tracer {
+                    let opcode = inst.next().unwrap().into(&tracer.borrow().function_index_translation);
                     tracer.borrow_mut().etable.push(
                         InstructionTableEntry {
                             fid,
                             iid,
-                            opcode: inst.next().unwrap().into(&tracer.borrow().function_index_translation),
+                            opcode,
                         },
                         current_sp + 1,
                         allocated_memory_pages,
