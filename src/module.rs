@@ -462,14 +462,14 @@ impl ModuleInstance {
     ///
     /// [new]: #method.new
     /// [ExternVal]: https://webassembly.github.io/spec/core/exec/runtime.html#syntax-externval
-    pub fn with_externvals<'a, 'i, I: Iterator<Item = &'i ExternVal>>(
-        loaded_module: &'a Module,
+    pub fn with_externvals<'i, I: Iterator<Item = &'i ExternVal>>(
+        loaded_module: std::rc::Rc<Module>,
         extern_vals: I,
         tracer: Option<Rc<RefCell<Tracer>>>,
-    ) -> Result<NotStartedModuleRef<'a>, Error> {
+    ) -> Result<NotStartedModuleRef, Error> {
         let module = loaded_module.module();
 
-        let module_ref = ModuleInstance::alloc_module(loaded_module, extern_vals, tracer.clone())?;
+        let module_ref = ModuleInstance::alloc_module(&loaded_module, extern_vals, tracer.clone())?;
 
         if let Some(tracer) = tracer.clone() {
             tracer.borrow_mut().register_module_instance(&module_ref);
@@ -618,11 +618,11 @@ impl ModuleInstance {
     /// [`NotStartedModuleRef`]: struct.NotStartedModuleRef.html
     /// [`ImportResolver`]: trait.ImportResolver.html
     /// [`assert_no_start`]: struct.NotStartedModuleRef.html#method.assert_no_start
-    pub fn new<'m, I: ImportResolver>(
-        loaded_module: &'m Module,
+    pub fn new<I: ImportResolver>(
+        loaded_module: std::rc::Rc<Module>,
         imports: &I,
         tracer: Option<Rc<RefCell<Tracer>>>,
-    ) -> Result<NotStartedModuleRef<'m>, Error> {
+    ) -> Result<NotStartedModuleRef, Error> {
         let module = loaded_module.module();
 
         let mut extern_vals = Vec::new();
@@ -802,12 +802,12 @@ impl ModuleInstance {
 /// [`run_start`]: #method.run_start
 /// [`assert_no_start`]: #method.assert_no_start
 /// [`not_started_instance`]: #method.not_started_instance
-pub struct NotStartedModuleRef<'a> {
-    loaded_module: &'a Module,
+pub struct NotStartedModuleRef {
+    loaded_module: std::rc::Rc<Module>,
     instance: ModuleRef,
 }
 
-impl<'a> NotStartedModuleRef<'a> {
+impl NotStartedModuleRef {
     /// Returns not fully initialized instance.
     ///
     /// To fully initialize the instance you need to call either [`run_start`] or
