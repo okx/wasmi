@@ -843,7 +843,7 @@ impl NotStartedModuleRef {
     ///
     /// Returns `Err` if start function traps.
     pub fn run_start_tracer<E: Externals>(
-        self,
+        &self,
         state: &mut E,
         tracer: Rc<RefCell<Tracer>>,
     ) -> Result<ModuleRef, Trap> {
@@ -858,7 +858,7 @@ impl NotStartedModuleRef {
                 .expect("Due to validation start function should exists");
             FuncInstance::invoke_trace(&start_func, &[], state, tracer)?;
         }
-        Ok(self.instance)
+        Ok(self.instance.clone())
     }
 
     /// Executes `start` function (if any) and returns fully instantiated module.
