@@ -226,10 +226,6 @@ impl Tracer {
     }
 
     pub(crate) fn register_module_instance(&mut self, module_instance: &ModuleRef) {
-        if self.dry_run() {
-            return;
-        }
-
         {
             let mut func_index = 0;
 
@@ -297,6 +293,11 @@ impl Tracer {
                     }
                 }
             }
+        }
+
+        // make dry_run ignore itable
+        if self.dry_run() {
+            return;
         }
 
         {
