@@ -3193,7 +3193,10 @@ impl ValueStack {
     #[inline]
     fn pop(&mut self) -> ValueInternal {
         self.sp -= 1;
-        self.buf[self.sp]
+        let ret = self.buf[self.sp];
+        self.buf[self.sp] = ValueInternal(0);
+
+        ret
     }
 
     #[inline]
